@@ -553,6 +553,77 @@
     font-family: 'Fira Code', monospace;
     border-top: 1px solid var(--border);
   }
+
+  /* ===== MOBILE RESPONSIVE ===== */
+  @media (max-width: 768px) {
+
+    .hero { padding: 48px 20px 36px; }
+    .hero h1 { font-size: 36px; letter-spacing: -1px; }
+    .hero p { font-size: 14px; }
+
+    /* Analogy strip — stack vertically */
+    .analogy-strip {
+      flex-direction: column;
+      padding: 0 20px;
+      margin-bottom: 48px;
+    }
+    .analogy-item:first-child { border-radius: 12px 12px 0 0; }
+    .analogy-item:last-child { border-radius: 0 0 12px 12px; }
+    .analogy-arrow {
+      justify-content: center;
+      border: none;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 8px 0;
+      writing-mode: horizontal-tb;
+    }
+
+    /* Sections */
+    .section { padding: 0 20px; margin-bottom: 48px; }
+    .section-title { font-size: 22px; margin-bottom: 20px; }
+
+    /* File cards */
+    .file-card-header { padding: 16px 18px; flex-wrap: wrap; gap: 10px; }
+    .file-card-role { margin-left: 0; }
+    .file-card-body { padding: 18px; }
+    .file-card-title { font-size: 15px; }
+
+    /* Methods grid — single column on mobile */
+    .methods-grid { grid-template-columns: 1fr; gap: 12px; }
+
+    /* Code blocks — scrollable */
+    .code-block { font-size: 11px; padding: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* Flow section */
+    .flow-section { padding: 0 20px; margin-bottom: 48px; }
+    .flow-container { padding: 24px 18px; }
+    .flow-step { gap: 14px; padding-bottom: 24px; }
+    .flow-step::after { left: 18px; top: 38px; }
+    .step-num { width: 38px; height: 38px; font-size: 13px; flex-shrink: 0; }
+    .step-title { font-size: 15px; }
+    .step-desc { font-size: 13px; }
+    .step-pill { font-size: 10px; padding: 3px 8px; word-break: break-all; }
+
+    /* Summary table — scrollable */
+    .summary-section { padding: 0 20px; margin-bottom: 48px; }
+    .summary-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+    .summary-table th, .summary-table td { padding: 12px 14px; font-size: 12px; }
+
+    .description-box { font-size: 13px; padding: 12px 14px; }
+    footer { padding: 28px 20px; font-size: 11px; }
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 26px; }
+    .hero-badge { font-size: 10px; padding: 5px 12px; }
+    .file-card-header { padding: 14px; }
+    .file-icon { width: 36px; height: 36px; font-size: 16px; }
+    .section-title { font-size: 20px; }
+    .method-card { padding: 12px 14px; }
+    .method-name { font-size: 12px; }
+    .flow-container { padding: 18px 14px; }
+    .file-card-role { font-size: 10px; padding: 3px 8px; }
+  }
 </style>
 </head>
 <body>
