@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JWT Security — Visual Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    padding: 80px 40px 60px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 80% 50%, rgba(124,58,237,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.25);
+    color: var(--accent);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 24px;
+    font-family: 'Fira Code', monospace;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 18px;
+    max-width: 560px;
+    margin: 0 auto 40px;
+    font-weight: 400;
+    font-family: 'Fira Code', monospace;
+  }
+
+  /* ANALOGY STRIP */
+  .analogy-strip {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    max-width: 900px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+  }
+
+  .analogy-item {
+    flex: 1;
+    text-align: center;
+    padding: 24px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  .analogy-item:first-child { border-radius: 12px 0 0 12px; }
+  .analogy-item:last-child { border-radius: 0 12px 12px 0; }
+
+  .analogy-icon { font-size: 32px; display: block; margin-bottom: 10px; }
+  .analogy-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-family: 'Fira Code', monospace; margin-bottom: 6px; }
+  .analogy-title { font-size: 14px; font-weight: 700; color: var(--text); }
+
+  .analogy-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    color: var(--muted);
+    font-size: 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0 8px;
+  }
+
+  /* SECTION */
+  .section {
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+  }
+
+  .section-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 40px;
+    color: #fff;
+  }
+
+  /* FILE CARDS */
+  .file-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    transition: border-color 0.3s;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .file-card:nth-child(1) { animation-delay: 0.1s; }
+  .file-card:nth-child(2) { animation-delay: 0.2s; }
+  .file-card:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .file-card:hover { border-color: rgba(0,212,255,0.3); }
+
+  .file-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .file-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .file-icon.red { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); }
+  .file-icon.blue { background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.25); }
+  .file-icon.green { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); }
+
+  .file-card-title { font-size: 18px; font-weight: 700; color: #fff; }
+  .file-card-subtitle { font-size: 13px; color: var(--muted); font-family: 'Fira Code', monospace; }
+
+  .file-card-role {
+    margin-left: auto;
+    font-size: 11px;
+    font-family: 'Fira Code', monospace;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .role-red { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+  .role-blue { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+  .role-green { background: rgba(16,185,129,0.1); color: var(--accent3); border: 1px solid rgba(16,185,129,0.2); }
+
+  .file-card-body { padding: 28px; }
+
+  .description-box {
+    background: rgba(0,0,0,0.3);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 28px;
+    font-size: 15px;
+    color: #94a3b8;
+    font-style: italic;
+  }
+
+  /* METHODS GRID */
+  .methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .method-card {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .method-card:hover {
+    border-color: rgba(0,212,255,0.4);
+    transform: translateY(-2px);
+  }
+
+  .method-name {
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent4);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .method-name::before {
+    content: 'fn';
+    font-size: 10px;
+    color: var(--accent2);
+    background: rgba(124,58,237,0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .method-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
+  .method-analogy {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--accent3);
+    font-family: 'Fira Code', monospace;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .code-block .code-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .kw { color: #c792ea; }
+  .fn { color: #82aaff; }
+  .str { color: #c3e88d; }
+  .cmt { color: #546e7a; font-style: italic; }
+  .num { color: #f78c6c; }
+  .cls { color: #ffcb6b; }
+
+  /* FLOW DIAGRAM */
+  .flow-section {
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+  }
+
+  .flow-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flow-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(124,58,237,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    position: relative;
+    padding-bottom: 32px;
+  }
+
+  .flow-step:last-child { padding-bottom: 0; }
+
+  .flow-step::after {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 46px;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--border), transparent);
+  }
+
+  .flow-step:last-child::after { display: none; }
+
+  .step-num {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-num.s1 { background: rgba(0,212,255,0.15); border: 2px solid rgba(0,212,255,0.4); color: var(--accent); }
+  .step-num.s2 { background: rgba(124,58,237,0.15); border: 2px solid rgba(124,58,237,0.4); color: #a78bfa; }
+  .step-num.s3 { background: rgba(245,158,11,0.15); border: 2px solid rgba(245,158,11,0.4); color: var(--accent4); }
+  .step-num.s4 { background: rgba(16,185,129,0.15); border: 2px solid rgba(16,185,129,0.4); color: var(--accent3); }
+  .step-num.s5 { background: rgba(239,68,68,0.15); border: 2px solid rgba(239,68,68,0.4); color: var(--accent5); }
+  .step-num.s6 { background: rgba(16,185,129,0.15); border: 2px solid rgba(16,185,129,0.4); color: var(--accent3); }
+
+  .step-content { flex: 1; padding-top: 10px; }
+  .step-title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .step-desc { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+
+  .step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+
+  .pill-blue { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+  .pill-purple { background: rgba(124,58,237,0.1); color: #a78bfa; border: 1px solid rgba(124,58,237,0.2); }
+  .pill-green { background: rgba(16,185,129,0.1); color: var(--accent3); border: 1px solid rgba(16,185,129,0.2); }
+  .pill-red { background: rgba(239,68,68,0.1); color: var(--accent5); border: 1px solid rgba(239,68,68,0.2); }
+  .pill-amber { background: rgba(245,158,11,0.1); color: var(--accent4); border: 1px solid rgba(245,158,11,0.2); }
+
+  /* INTERACTION MAP */
+  .interaction-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 0;
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+  }
+
+  .entity-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .entity-emoji { font-size: 36px; display: block; margin-bottom: 10px; }
+  .entity-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .entity-desc { font-size: 12px; color: var(--muted); font-family: 'Fira Code', monospace; }
+
+  .arrow-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px;
+  }
+
+  .arrow-line {
+    width: 80px;
+    height: 2px;
+    position: relative;
+  }
+
+  .arrow-line::after {
+    content: '▶';
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    font-size: 12px;
+  }
+
+  .arrow-label { font-size: 11px; font-family: 'Fira Code', monospace; color: var(--muted); text-align: center; }
+  .arrow-line.cyan { background: var(--accent); }
+  .arrow-line.cyan::after { color: var(--accent); }
+  .arrow-line.purple { background: #a78bfa; }
+  .arrow-line.purple::after { color: #a78bfa; }
+
+  /* BUG BOX */
+  .bug-box {
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+  }
+
+  .bug-card {
+    background: rgba(239,68,68,0.05);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 16px;
+    padding: 28px 32px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .bug-icon { font-size: 32px; flex-shrink: 0; margin-top: 2px; }
+  .bug-title { font-size: 18px; font-weight: 700; color: #fca5a5; margin-bottom: 12px; }
+
+  .code-diff {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+  }
+
+  .diff-line {
+    padding: 10px 14px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .diff-line.bad { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); }
+  .diff-line.good { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); }
+  .diff-marker { font-weight: 800; font-size: 16px; flex-shrink: 0; }
+  .diff-marker.bad { color: #ef4444; }
+  .diff-marker.good { color: #10b981; }
+
+  /* SUMMARY TABLE */
+  .summary-section {
+    max-width: 1000px;
+    margin: 0 auto 80px;
+    padding: 0 40px;
+  }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .summary-table th {
+    background: var(--surface2);
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    font-family: 'Fira Code', monospace;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-table td {
+    background: var(--surface);
+    padding: 16px 20px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .summary-table tr:last-child td { border-bottom: none; }
+
+  .summary-table td:first-child { font-weight: 700; color: #fff; }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'Fira Code', monospace;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🔐 Spring Security</div>
+  <h1>Understanding <span>JWT</span><br>in Spring Boot</h1>
+  <p>A visual, beginner-friendly breakdown of how JWT authentication works across your three security files.</p>
+</div>
+
+<!-- ANALOGY -->
+<div style="max-width:900px;margin:0 auto 40px;padding:0 40px;">
+  <div style="text-align:center;font-family:'Fira Code',monospace;font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;">// Think of it like an Airport</div>
+</div>
+<div class="analogy-strip">
+  <div class="analogy-item">
+    <span class="analogy-icon">🛂</span>
+    <div class="analogy-label">Passport Office</div>
+    <div class="analogy-title">JwtUtils<br><small style="color:var(--muted);font-weight:400">Issues & verifies passports</small></div>
+  </div>
+  <div class="analogy-arrow">→</div>
+  <div class="analogy-item">
+    <span class="analogy-icon">🔍</span>
+    <div class="analogy-label">Security Scanner</div>
+    <div class="analogy-title">AuthTokenFilter<br><small style="color:var(--muted);font-weight:400">Scans every passenger</small></div>
+  </div>
+  <div class="analogy-arrow">→</div>
+  <div class="analogy-item">
+    <span class="analogy-icon">🚫</span>
+    <div class="analogy-label">Rejection Officer</div>
+    <div class="analogy-title">AuthEntryPointJwt<br><small style="color:var(--muted);font-weight:400">Turns away invalid passengers</small></div>
+  </div>
+</div>
+
+<!-- FILES -->
+<div class="section">
+  <div class="section-label">// Three Files</div>
+  <div class="section-title">Deep Dive Into Each File</div>
+
+  <!-- FILE 1 -->
+  <div class="file-card">
+    <div class="file-card-header">
+      <div class="file-icon red">🚫</div>
+      <div>
+        <div class="file-card-title">AuthEntryPointJwt.java</div>
+        <div class="file-card-subtitle">implements AuthenticationEntryPoint</div>
+      </div>
+      <div class="file-card-role role-red">Error Handler</div>
+    </div>
+    <div class="file-card-body">
+      <div class="description-box">
+        Think of this as the <strong>airport officer who stops you at the gate</strong>. When someone tries to access a protected endpoint without a valid token, Spring Security automatically calls this class. Its job is simple: send back a clean, structured JSON error instead of a raw ugly server error.
+      </div>
+
+      <div class="methods-grid">
+        <div class="method-card">
+          <div class="method-name">commence()</div>
+          <div class="method-desc">Called automatically by Spring Security when an unauthenticated user hits a protected route. Sets response status to 401.</div>
+          <div class="method-analogy">🚫 "Officer's standard rejection"</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <span class="code-label">// What it sends back to the client</span>
+{
+  <span class="str">"status"</span>: <span class="num">401</span>,
+  <span class="str">"Error"</span>: <span class="str">"Unauthorized"</span>,
+  <span class="str">"Message"</span>: <span class="str">"Full authentication is required to access this resource"</span>,
+  <span class="str">"path"</span>: <span class="str">"/api/products"</span>
+}
+      </div>
+
+
+    </div>
+  </div>
+
+  <!-- FILE 2 -->
+  <div class="file-card">
+    <div class="file-card-header">
+      <div class="file-icon blue">🏭</div>
+      <div>
+        <div class="file-card-title">JwtUtils.java</div>
+        <div class="file-card-subtitle">@Component — Token Factory & Inspector</div>
+      </div>
+      <div class="file-card-role role-blue">Core Logic</div>
+    </div>
+    <div class="file-card-body">
+      <div class="description-box">
+        This is the <strong>passport office of your JWT system</strong>. It does three things: issue passports (create tokens), read passports (decode tokens), and verify passports (validate tokens). It reads your secret key and expiry time from <code style="font-family:'Fira Code',monospace;color:var(--accent)">application.properties</code> via <code style="font-family:'Fira Code',monospace;color:var(--accent)">@Value</code>.
+      </div>
+
+      <div class="methods-grid">
+        <div class="method-card">
+          <div class="method-name">key()</div>
+          <div class="method-desc">Converts your Base64-encoded secret string from application.properties into a real cryptographic signing key.</div>
+          <div class="method-analogy">🔏 "The government's official seal"</div>
+        </div>
+        <div class="method-card">
+          <div class="method-name">generateTokenFromUserName()</div>
+          <div class="method-desc">Takes a logged-in user's details, embeds their username + timestamps, signs it with the secret key, and returns a compact JWT string.</div>
+          <div class="method-analogy">🛂 "Issuing a new passport"</div>
+        </div>
+        <div class="method-card">
+          <div class="method-name">getJwtFromHeader()</div>
+          <div class="method-desc">Reads the Authorization header from the HTTP request and strips the "Bearer " prefix to extract the raw JWT token.</div>
+          <div class="method-analogy">✋ "Asking to see the passport"</div>
+        </div>
+        <div class="method-card">
+          <div class="method-name">getUserNameFromJwtToken()</div>
+          <div class="method-desc">Decodes the JWT token and extracts the subject field, which is the username you embedded when generating the token.</div>
+          <div class="method-analogy">📖 "Reading the name inside it"</div>
+        </div>
+        <div class="method-card">
+          <div class="method-name">validateJwtToken()</div>
+          <div class="method-desc">Tries to parse the JWT. Catches 4 specific exceptions: expired, malformed, unsupported, or empty — logs each and returns false. Returns true only if valid.</div>
+          <div class="method-analogy">🔦 "Scanner checking if it's genuine"</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <span class="code-label">// Token structure — what's inside your JWT</span>
+<span class="cmt">// HEADER (algorithm used)</span>
+{ <span class="str">"alg"</span>: <span class="str">"HS256"</span> }
+
+<span class="cmt">// PAYLOAD (your data — the "claims")</span>
+{ <span class="str">"sub"</span>: <span class="str">"john_doe"</span>, <span class="str">"iat"</span>: <span class="num">1720000000</span>, <span class="str">"exp"</span>: <span class="num">1720086400</span> }
+
+<span class="cmt">// SIGNATURE (tamper-proof seal)</span>
+HMACSHA256(base64(header) + <span class="str">"."</span> + base64(payload), secretKey)
+
+<span class="cmt">// Final token sent to client looks like:</span>
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huX2RvZSJ9.xyz123...
+      </div>
+    </div>
+  </div>
+
+  <!-- FILE 3 -->
+  <div class="file-card">
+    <div class="file-card-header">
+      <div class="file-icon green">🚦</div>
+      <div>
+        <div class="file-card-title">AuthTokenFilter.java</div>
+        <div class="file-card-subtitle">extends OncePerRequestFilter</div>
+      </div>
+      <div class="file-card-role role-green">Request Interceptor</div>
+    </div>
+    <div class="file-card-body">
+      <div class="description-box">
+        This filter runs <strong>on every single incoming HTTP request</strong> — once and only once (that's what <code style="font-family:'Fira Code',monospace;color:var(--accent)">OncePerRequestFilter</code> guarantees). Think of it as the <strong>security scanner at the airport boarding gate</strong>: every passenger (request) must pass through it before reaching their flight (controller).
+      </div>
+
+      <div class="methods-grid">
+        <div class="method-card">
+          <div class="method-name">doFilterInternal()</div>
+          <div class="method-desc">The main checkpoint logic. Runs on every request. If a valid JWT is found, it loads the user and sets them as authenticated in Spring's SecurityContext.</div>
+          <div class="method-analogy">🔍 "The full boarding gate scan"</div>
+        </div>
+        <div class="method-card">
+          <div class="method-name">parseJwt()</div>
+          <div class="method-desc">A private helper method. Simply delegates to JwtUtils.getJwtFromHeader() to extract the token from the request. Keeps code clean and readable.</div>
+          <div class="method-analogy">✋ "Ask the passenger for their passport"</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <span class="code-label">// doFilterInternal — simplified logic</span>
+<span class="kw">String</span> jwt = parseJwt(request);             <span class="cmt">// Step 1: Extract token</span>
+
+<span class="kw">if</span> (jwt != <span class="kw">null</span> && jwtUtils.validateJwtToken(jwt)) {   <span class="cmt">// Step 2: Is it valid?</span>
+    <span class="kw">String</span> username = jwtUtils.getUserName(jwt);            <span class="cmt">// Step 3: Who is this?</span>
+    UserDetails user = userDetailsService.load(username);   <span class="cmt">// Step 4: Load from DB</span>
+
+    <span class="cmt">// Step 5: Tell Spring "this user is authenticated"</span>
+    UsernamePasswordAuthenticationToken auth =
+        <span class="kw">new</span> UsernamePasswordAuthenticationToken(user, <span class="kw">null</span>, user.getAuthorities());
+
+    SecurityContextHolder.getContext().setAuthentication(auth); <span class="cmt">// ✅ Authenticated!</span>
+}
+
+filterChain.doFilter(request, response); <span class="cmt">// Always pass request forward</span>
+      </div>
+
+      <br>
+      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:14px 18px;margin-top:4px;">
+        <div style="font-size:13px;color:#fbbf24;font-weight:700;margin-bottom:4px;">💡 Key Insight — SecurityContext</div>
+        <div style="font-size:13px;color:var(--muted);">When you call <code style="font-family:'Fira Code',monospace;color:#fbbf24">SecurityContextHolder.getContext().setAuthentication(auth)</code>, you're telling Spring: "This request belongs to this authenticated user." Every controller in the request chain can now access this user's info and roles.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FLOW DIAGRAM -->
+<div class="flow-section">
+  <div class="section-label">// Complete Journey</div>
+  <div class="section-title" style="margin-bottom:32px;">Step-by-Step Request Flow</div>
+
+  <div class="flow-container">
+    <div class="flow-step">
+      <div class="step-num s1">1</div>
+      <div class="step-content">
+        <div class="step-title">User sends a request</div>
+        <div class="step-desc">Client makes an HTTP request to a protected endpoint (e.g. GET /api/products) with a JWT in the Authorization header.</div>
+        <span class="step-pill pill-blue">Authorization: Bearer eyJhbGci...</span>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num s2">2</div>
+      <div class="step-content">
+        <div class="step-title">AuthTokenFilter intercepts it</div>
+        <div class="step-desc">Since it extends <code style="font-family:'Fira Code',monospace;color:#a78bfa">OncePerRequestFilter</code>, it runs before any controller sees the request. It calls <code style="font-family:'Fira Code',monospace;color:#a78bfa">parseJwt()</code> to extract the token from the header.</div>
+        <span class="step-pill pill-purple">AuthTokenFilter.doFilterInternal()</span>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num s3">3</div>
+      <div class="step-content">
+        <div class="step-title">JwtUtils validates the token</div>
+        <div class="step-desc"><code style="font-family:'Fira Code',monospace;color:#fbbf24">validateJwtToken()</code> checks: Is the signature valid? Is it expired? Is it malformed? Returns <code style="font-family:'Fira Code',monospace;color:#10b981">true</code> or <code style="font-family:'Fira Code',monospace;color:#ef4444">false</code>.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="step-pill pill-green">✓ Valid signature</span>
+          <span class="step-pill pill-green">✓ Not expired</span>
+          <span class="step-pill pill-green">✓ Well-formed</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num s4">4</div>
+      <div class="step-content">
+        <div class="step-title">Username extracted → User loaded from DB</div>
+        <div class="step-desc"><code style="font-family:'Fira Code',monospace;color:#10b981">getUserNameFromJwtToken()</code> decodes the token payload to get the username. Then <code style="font-family:'Fira Code',monospace;color:#10b981">UserDetailsService.loadUserByUsername()</code> fetches full user details (roles, etc.) from your database.</div>
+        <span class="step-pill pill-green">UserDetailsService → Database</span>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num s5">5a</div>
+      <div class="step-content">
+        <div class="step-title">No valid token? → AuthEntryPointJwt fires</div>
+        <div class="step-desc">If no token was found or validation failed, Spring Security detects an unauthenticated request and calls <code style="font-family:'Fira Code',monospace;color:#ef4444">AuthEntryPointJwt.commence()</code>, which returns a 401 JSON error.</div>
+        <span class="step-pill pill-red">HTTP 401 Unauthorized</span>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num s6">5b</div>
+      <div class="step-content">
+        <div class="step-title">Valid token → SecurityContext updated → Request continues ✅</div>
+        <div class="step-desc">The authenticated user object is set in <code style="font-family:'Fira Code',monospace;color:#10b981">SecurityContextHolder</code>. The filter calls <code style="font-family:'Fira Code',monospace;color:#10b981">filterChain.doFilter()</code> to pass the request to your controller, which can now access the authenticated user.</div>
+        <span class="step-pill pill-green">Request reaches @RestController ✅</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK REFERENCE TABLE -->
+<div class="summary-section">
+  <div class="section-label">// Quick Reference</div>
+  <div class="section-title" style="margin-bottom:32px;">All Three Files at a Glance</div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Triggered By</th>
+        <th>Main Job</th>
+        <th>Output</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          AuthEntryPointJwt
+          <div><span class="tag" style="background:rgba(239,68,68,0.1);color:#ef4444">Error Handler</span></div>
+        </td>
+        <td style="color:var(--muted)">Spring Security detects unauthenticated access</td>
+        <td style="color:var(--muted)">Returns a clean 401 JSON error response</td>
+        <td style="color:var(--muted);font-family:'Fira Code',monospace;font-size:12px">{ status: 401, Error: "Unauthorized" }</td>
+      </tr>
+      <tr>
+        <td>
+          JwtUtils
+          <div><span class="tag" style="background:rgba(0,212,255,0.1);color:var(--accent)">Core Logic</span></div>
+        </td>
+        <td style="color:var(--muted)">Called by AuthTokenFilter (and your login controller)</td>
+        <td style="color:var(--muted)">Create, decode, and validate JWT tokens</td>
+        <td style="color:var(--muted);font-family:'Fira Code',monospace;font-size:12px">Token string / username / boolean</td>
+      </tr>
+      <tr>
+        <td>
+          AuthTokenFilter
+          <div><span class="tag" style="background:rgba(16,185,129,0.1);color:var(--accent3)">Interceptor</span></div>
+        </td>
+        <td style="color:var(--muted)">Every single incoming HTTP request automatically</td>
+        <td style="color:var(--muted)">Extract → Validate → Authenticate user in SecurityContext</td>
+        <td style="color:var(--muted);font-family:'Fira Code',monospace;font-size:12px">Sets authentication or passes through</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+
+<footer>
+  JWT Security Flow Guide &nbsp;•&nbsp; Spring Boot &nbsp;•&nbsp; Built for beginners 🚀
+</footer>
+
+</body>
+</html>
